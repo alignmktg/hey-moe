@@ -16,34 +16,49 @@
   --font-body: "Inter", system-ui, sans-serif;
 }
 
-html {
-  scroll-behavior: smooth;
-  height: 100dvh;
-  overscroll-behavior: none;
-}
-
-html,
-body,
-#root {
-  margin: 0;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Ionic theme overrides */
+:root {
+  --ion-background-color: #fafaf8;
+  --ion-text-color: #1a1a1a;
+  --ion-toolbar-background: #ffffff;
+  --ion-tab-bar-background: #ffffff;
+  --ion-tab-bar-border-color: #e8e5e1;
+  --ion-color-primary: #e85d3a;
+  --ion-color-primary-rgb: 232, 93, 58;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-shade: #d14e2d;
+  --ion-color-primary-tint: #f0845d;
+  --ion-font-family: "Inter", system-ui, sans-serif;
+  --ion-safe-area-top: env(safe-area-inset-top);
+  --ion-safe-area-bottom: env(safe-area-inset-bottom);
 }
 
 body {
-  height: 100dvh;
   font-family: var(--font-body);
-  background-color: var(--color-page-bg);
-  color: var(--color-text-primary);
   -webkit-text-size-adjust: 100%;
-}
-
-#root {
-  height: 100dvh;
-  overscroll-behavior-y: none;
 }
 
 ::selection {
   background-color: var(--color-accent-light);
   color: var(--color-accent);
+}
+
+/* Ionic overrides for our design */
+ion-toolbar {
+  --background: #ffffff;
+  --border-color: #e8e5e1;
+}
+
+ion-tab-bar {
+  --background: #ffffff;
+  --border: 1px solid #e8e5e1;
+}
+
+ion-tab-button {
+  --color: #9c9690;
+  --color-selected: #e85d3a;
+}
+
+ion-content {
+  --background: #fafaf8;
 }

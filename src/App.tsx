@@ -1,49 +1,59 @@
-import { lazy, Suspense } from "react";
-import { useStore } from "./store/useStore";
-import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
-import { AppShell } from "./components/layout/AppShell";
-import { Sidebar } from "./components/layout/Sidebar";
-import { CmdKModal } from "./components/layout/CmdKModal";
+import { Redirect, Route } from "react-router-dom";
+import {
+  IonApp,
+  IonIcon,
+  IonLabel,
+  IonRouterOutlet,
+  IonTabBar,
+  IonTabButton,
+  IonTabs,
+} from "@ionic/react";
+import { IonReactRouter } from "@ionic/react-router";
+import {
+  listOutline,
+  gridOutline,
+  layersOutline,
+  chatbubbleOutline,
+} from "ionicons/icons";
 
-const ListView = lazy(() => import("./components/views/ListView/ListView"));
-const KanbanBoard = lazy(
-  () => import("./components/views/KanbanView/KanbanBoard"),
-);
-const SwipeCardStack = lazy(
-  () => import("./components/views/SwipeStackView/SwipeCardStack"),
-);
-const MoeView = lazy(() => import("./components/views/MoeView/MoeView"));
+import ListView from "./components/views/ListView/ListView";
+import KanbanBoard from "./components/views/KanbanView/KanbanBoard";
+import SwipeCardStack from "./components/views/SwipeStackView/SwipeCardStack";
+import MoeView from "./components/views/MoeView/MoeView";
 
-const views = {
-  list: ListView,
-  kanban: KanbanBoard,
-  swipe: SwipeCardStack,
-  moe: MoeView,
-} as const;
-
-function App() {
-  useKeyboardShortcuts();
-  const currentView = useStore((s) => s.currentView);
-  const ActiveView = views[currentView];
-
+export default function App() {
   return (
-    <>
-      <AppShell>
-        <Suspense
-          fallback={
-            <div className="flex h-full items-center justify-center text-gray-400 text-sm">
-              Loading...
-            </div>
-          }
-        >
-          <ActiveView />
-        </Suspense>
-      </AppShell>
+    <IonApp>
+      <IonReactRouter>
+        <IonTabs>
+          <IonRouterOutlet>
+            <Redirect exact path="/" to="/list" />
+            <Route path="/list" render={() => <ListView />} exact />
+            <Route path="/kanban" render={() => <KanbanBoard />} exact />
+            <Route path="/swipe" render={() => <SwipeCardStack />} exact />
+            <Route path="/moe" render={() => <MoeView />} exact />
+          </IonRouterOutlet>
 
-      <Sidebar />
-      <CmdKModal />
-    </>
+          <IonTabBar slot="bottom">
+            <IonTabButton tab="list" href="/list">
+              <IonIcon icon={listOutline} />
+              <IonLabel>List</IonLabel>
+            </IonTabButton>
+            <IonTabButton tab="kanban" href="/kanban">
+              <IonIcon icon={gridOutline} />
+              <IonLabel>Kanban</IonLabel>
+            </IonTabButton>
+            <IonTabButton tab="swipe" href="/swipe">
+              <IonIcon icon={layersOutline} />
+              <IonLabel>Swipe</IonLabel>
+            </IonTabButton>
+            <IonTabButton tab="moe" href="/moe">
+              <IonIcon icon={chatbubbleOutline} />
+              <IonLabel>Moe</IonLabel>
+            </IonTabButton>
+          </IonTabBar>
+        </IonTabs>
+      </IonReactRouter>
+    </IonApp>
   );
 }
-
-export default App;
