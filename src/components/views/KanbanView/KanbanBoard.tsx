@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { motion } from "framer-motion";
-import { Calendar } from "lucide-react";
+import { Calendar, GripVertical } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -84,64 +84,74 @@ function SortableCard({
       style={style}
       layout
       className={cn(
-        "bg-white rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] touch-manipulation transition-shadow",
+        "bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow relative",
         "hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]",
         isDragging &&
           "opacity-50 shadow-[0_4px_12px_rgba(0,0,0,0.12)] scale-[1.02]",
         isDoneColumn && "opacity-70",
       )}
       {...attributes}
-      {...listeners}
     >
-      <p
-        className={cn(
-          "text-[14px] font-['Inter',sans-serif] font-semibold leading-snug text-[#1A1A1A]",
-          isDoneColumn && "line-through text-[#9C9690]",
-        )}
-      >
-        {task.title}
-      </p>
-
-      <div className="flex items-center gap-3 mt-2.5">
-        {projectName && (
-          <span className="flex items-center gap-1.5 text-[12px] font-['Inter',sans-serif] text-[#6B6660]">
-            <span
-              className="w-[6px] h-[6px] rounded-full flex-shrink-0"
-              style={{ backgroundColor: getProjectColor(task.projectId) }}
-            />
-            {projectName}
-          </span>
-        )}
-        {task.dueDate && (
-          <span
+      <div className="flex">
+        {/* Drag handle */}
+        <div
+          className="flex items-center justify-center w-8 shrink-0 cursor-grab active:cursor-grabbing text-[#D4D0CC] hover:text-[#9C9690] touch-none"
+          {...listeners}
+        >
+          <GripVertical size={14} />
+        </div>
+        <div className="flex-1 py-3.5 pr-4">
+          <p
             className={cn(
-              "flex items-center gap-1 text-[12px] font-['Inter',sans-serif]",
-              isOverdue(task.dueDate) ? "text-[#E85D3A]" : "text-[#6B6660]",
+              "text-[14px] font-['Inter',sans-serif] font-semibold leading-snug text-[#1A1A1A]",
+              isDoneColumn && "line-through text-[#9C9690]",
             )}
           >
-            <Calendar className="w-3 h-3" />
-            {formatDate(task.dueDate)}
-          </span>
-        )}
-      </div>
+            {task.title}
+          </p>
 
-      {task.tags && task.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-2.5">
-          {task.tags.map((tag) => (
-            <span
-              key={tag}
-              className={cn(
-                "text-[11px] tracking-wide px-2 py-0.5 rounded-full font-['Inter',sans-serif]",
-                tag.toLowerCase() === "urgent"
-                  ? "bg-[#FEF2EE] text-[#E85D3A]"
-                  : "bg-[#F0EDE8] text-[#6B6660]",
-              )}
-            >
-              {tag}
-            </span>
-          ))}
+          <div className="flex items-center gap-3 mt-2.5">
+            {projectName && (
+              <span className="flex items-center gap-1.5 text-[12px] font-['Inter',sans-serif] text-[#6B6660]">
+                <span
+                  className="w-[6px] h-[6px] rounded-full flex-shrink-0"
+                  style={{ backgroundColor: getProjectColor(task.projectId) }}
+                />
+                {projectName}
+              </span>
+            )}
+            {task.dueDate && (
+              <span
+                className={cn(
+                  "flex items-center gap-1 text-[12px] font-['Inter',sans-serif]",
+                  isOverdue(task.dueDate) ? "text-[#E85D3A]" : "text-[#6B6660]",
+                )}
+              >
+                <Calendar className="w-3 h-3" />
+                {formatDate(task.dueDate)}
+              </span>
+            )}
+          </div>
+
+          {task.tags && task.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2.5">
+              {task.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className={cn(
+                    "text-[11px] tracking-wide px-2 py-0.5 rounded-full font-['Inter',sans-serif]",
+                    tag.toLowerCase() === "urgent"
+                      ? "bg-[#FEF2EE] text-[#E85D3A]"
+                      : "bg-[#F0EDE8] text-[#6B6660]",
+                  )}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </motion.div>
   );
 }
