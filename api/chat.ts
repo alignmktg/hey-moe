@@ -1,11 +1,5 @@
 import { createAnthropic } from "@ai-sdk/anthropic";
-import {
-  streamText,
-  convertToModelMessages,
-  type UIMessage,
-  tool,
-  stepCountIs,
-} from "ai";
+import { streamText, tool, stepCountIs } from "ai";
 import { z } from "zod";
 
 export const config = { runtime: "edge" };
@@ -16,7 +10,7 @@ const anthropic = createAnthropic({
 
 const SYSTEM_PROMPT = `You are Moe, an AI task management assistant for the Hey Moe app. You help users manage tasks and projects. When users want to create tasks or spawn sub-agents for research/work, use the available tools. Be concise, friendly, and action-oriented. Always confirm what you did after using a tool.`;
 
-const tools = {
+const chatTools = {
   create_task: tool({
     description: "Creates a new task in the user's local database",
     inputSchema: z.object({
@@ -52,19 +46,50 @@ const tools = {
   }),
 };
 
+interface UIMessagePart {
+  type: string;
+  text?: string;
+}
+
+interface UIMsg {
+  id?: string;
+  role: string;
+  parts?: UIMessagePart[];
+  content?: string;
+}
+
+function toModelMessages(messages: UIMsg[]) {
+  return messages.map((m) => {
+    // Extract text from parts array (AI SDK v6 UIMessage format)
+    const text =
+      m.parts
+        ?.filter((p) => p.type === "text" && p.text)
+        .map((p) => p.text)
+        .join("\n") ??
+      m.content ??
+      "";
+
+    return {
+      role: m.role as "user" | "assistant",
+      content: text,
+    };
+  });
+}
+
 export default async function handler(req: Request) {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
 
   try {
-    const { messages }: { messages: UIMessage[] } = await req.json();
+    const body = await req.json();
+    const messages: UIMsg[] = body.messages ?? [];
 
     const result = streamText({
       model: anthropic("claude-sonnet-4-6"),
       system: SYSTEM_PROMPT,
-      messages: convertToModelMessages(messages),
-      tools,
+      messages: toModelMessages(messages),
+      tools: chatTools,
       stopWhen: stepCountIs(3),
     });
 
