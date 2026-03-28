@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { motion } from "framer-motion";
 import { Calendar } from "lucide-react";
@@ -204,6 +204,7 @@ function Column({
 export default function KanbanBoard() {
   const activeProjectId = useStore((s) => s.activeProjectId);
   const { updateTask } = useSyncDB();
+  const [isDragging, setIsDragging] = useState(false);
 
   const tasks = useLiveQuery(async () => {
     if (activeProjectId) {
@@ -234,11 +235,16 @@ export default function KanbanBoard() {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, {
-      activationConstraint: { delay: 200, tolerance: 5 },
+      activationConstraint: { delay: 250, tolerance: 8 },
     }),
   );
 
+  const handleDragStart = () => {
+    setIsDragging(true);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
+    setIsDragging(false);
     const { active, over } = event;
     if (!over || !tasks) return;
 
@@ -258,9 +264,18 @@ export default function KanbanBoard() {
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      onDragCancel={() => setIsDragging(false)}
     >
-      <div className="flex gap-4 px-4 pt-4 pb-24 overflow-x-auto snap-x snap-mandatory h-full lg:px-8 lg:pt-6 lg:snap-none lg:justify-center">
+      <div
+        className={cn(
+          "flex gap-4 px-4 pt-4 pb-24 h-full lg:px-8 lg:pt-6 lg:snap-none lg:justify-center",
+          isDragging
+            ? "overflow-hidden"
+            : "overflow-x-auto snap-x snap-mandatory",
+        )}
+      >
         {COLUMNS.map((col) => (
           <Column
             key={col.id}

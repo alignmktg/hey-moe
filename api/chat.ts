@@ -1,5 +1,11 @@
 import { createAnthropic } from "@ai-sdk/anthropic";
-import { streamText, convertToModelMessages, type UIMessage, tool } from "ai";
+import {
+  streamText,
+  convertToModelMessages,
+  type UIMessage,
+  tool,
+  stepCountIs,
+} from "ai";
 import { z } from "zod";
 
 export const config = { runtime: "edge" };
@@ -46,21 +52,30 @@ const tools = {
   }),
 };
 
-export type ChatTools = typeof tools;
-
 export default async function handler(req: Request) {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
 
-  const { messages }: { messages: UIMessage[] } = await req.json();
+  try {
+    const { messages }: { messages: UIMessage[] } = await req.json();
 
-  const result = streamText({
-    model: anthropic("claude-sonnet-4-6"),
-    system: SYSTEM_PROMPT,
-    messages: convertToModelMessages(messages),
-    tools,
-  });
+    const result = streamText({
+      model: anthropic("claude-sonnet-4-6"),
+      system: SYSTEM_PROMPT,
+      messages: convertToModelMessages(messages),
+      tools,
+      stopWhen: stepCountIs(3),
+    });
 
-  return result.toUIMessageStreamResponse();
+    return result.toUIMessageStreamResponse();
+  } catch (error) {
+    console.error("Chat API error:", error);
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "Unknown error",
+      }),
+      { status: 500, headers: { "Content-Type": "application/json" } },
+    );
+  }
 }
