@@ -17,21 +17,27 @@ const tabs: { view: ViewMode; icon: typeof List; label: string }[] = [
   { view: "swipe", icon: Layers, label: "Swipe" },
 ];
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({
+  children,
+  moePanel,
+}: {
+  children: ReactNode;
+  moePanel?: ReactNode;
+}) {
   const {
     currentView,
     setCurrentView,
     toggleNavSidebar,
     toggleMoeSidebar,
+    isMoeSidebarOpen,
     isNavSidebarOpen,
   } = useStore();
 
   return (
     <div className="flex h-[100dvh] flex-col bg-[var(--color-page-bg)]">
       {/* Top bar */}
-      <header className="flex h-12 shrink-0 items-center justify-between bg-[var(--color-surface)] px-4 lg:px-6 pt-[env(safe-area-inset-top)] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+      <header className="relative z-10 flex h-12 shrink-0 items-center justify-between bg-[var(--color-surface)] px-4 lg:px-6 pt-[env(safe-area-inset-top)] shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <div className="flex items-center gap-4">
-          {/* Sidebar toggle — desktop only */}
           <button
             onClick={toggleNavSidebar}
             className="hidden lg:flex h-9 w-9 items-center justify-center rounded-lg text-[var(--color-text-tertiary)] hover:bg-[#F0EDE8] transition-colors"
@@ -48,7 +54,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         <div className="flex items-center gap-1">
-          {/* Desktop view tabs — inline in header */}
+          {/* Desktop view tabs */}
           <div className="hidden lg:flex items-center gap-1 mr-3">
             {tabs.map(({ view, icon: Icon, label }) => (
               <button
@@ -67,16 +73,21 @@ export function AppShell({ children }: { children: ReactNode }) {
             ))}
           </div>
 
-          {/* Moe button — desktop */}
+          {/* Moe toggle — desktop */}
           <button
             onClick={toggleMoeSidebar}
-            className="hidden lg:flex items-center gap-1.5 h-8 px-3 rounded-lg text-[13px] font-medium text-[var(--color-text-tertiary)] hover:bg-[#F0EDE8] transition-colors"
+            className={cn(
+              "hidden lg:flex items-center gap-1.5 h-8 px-3 rounded-lg text-[13px] font-medium transition-colors",
+              isMoeSidebarOpen
+                ? "bg-[#FEF2EE] text-[var(--color-accent)]"
+                : "text-[var(--color-text-tertiary)] hover:bg-[#F0EDE8]",
+            )}
           >
             <MessageCircle size={15} />
             Moe
           </button>
 
-          {/* Hamburger — mobile only */}
+          {/* Hamburger — mobile */}
           <button
             onClick={toggleNavSidebar}
             className="lg:hidden flex h-11 w-11 items-center justify-center text-[var(--color-text-tertiary)] active:text-[var(--color-text-secondary)]"
@@ -87,15 +98,22 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      {/* Content area */}
+      {/* Content + Moe panel */}
       <div className="flex min-h-0 flex-1">
-        {/* Desktop persistent sidebar */}
+        {/* Desktop nav sidebar */}
         {isNavSidebarOpen && (
           <aside className="hidden lg:flex w-[240px] shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)] overflow-y-auto" />
         )}
 
         {/* Main content */}
         <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
+
+        {/* Desktop Moe panel — inline, not overlay */}
+        {isMoeSidebarOpen && (
+          <div className="hidden lg:flex w-[420px] shrink-0 border-l border-[var(--color-border)] bg-white">
+            {moePanel}
+          </div>
+        )}
       </div>
 
       {/* Bottom tab bar — mobile only */}

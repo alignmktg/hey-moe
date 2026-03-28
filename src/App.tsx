@@ -4,6 +4,7 @@ import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { AppShell } from "./components/layout/AppShell";
 import { Sidebar } from "./components/layout/Sidebar";
 import { CmdKModal } from "./components/layout/CmdKModal";
+import { MoeInlinePanel } from "./components/chat/MoeSidebar";
 
 const ListView = lazy(() => import("./components/views/ListView/ListView"));
 const KanbanBoard = lazy(
@@ -27,7 +28,7 @@ function App() {
 
   return (
     <>
-      <AppShell>
+      <AppShell moePanel={<MoeInlinePanel />}>
         <Suspense
           fallback={
             <div className="flex h-full items-center justify-center text-gray-400 text-sm">
@@ -41,6 +42,7 @@ function App() {
 
       <Sidebar />
       <CmdKModal />
+      {/* Mobile-only overlay */}
       <Suspense fallback={null}>
         <MoeSidebar />
       </Suspense>
