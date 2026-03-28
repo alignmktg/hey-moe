@@ -33,7 +33,7 @@ export const useStore = create<StoreState>()((set) => ({
   // UI slice
   currentView: "list",
   isNavSidebarOpen: false,
-  isMoeSidebarOpen: false,
+  isMoeSidebarOpen: typeof window !== "undefined" && window.innerWidth >= 1024,
   isCmdKOpen: false,
 
   // Context slice

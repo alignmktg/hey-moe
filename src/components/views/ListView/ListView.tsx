@@ -78,7 +78,7 @@ export default function ListView() {
   const taskCount = tasks?.length ?? 0;
 
   return (
-    <div className="flex flex-col h-full px-4 pt-4 pb-24">
+    <div className="flex flex-col h-full px-4 pt-4 pb-24 lg:px-8 lg:pt-6 lg:max-w-[800px] lg:mx-auto lg:w-full">
       {/* Section header */}
       <div className="flex items-center gap-3 mb-4">
         <h2 className="font-['Fraunces',serif] text-[18px] font-semibold text-[#1A1A1A]">

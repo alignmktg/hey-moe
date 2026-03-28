@@ -161,7 +161,7 @@ function Column({
   return (
     <div
       className={cn(
-        "flex-shrink-0 w-[80vw] max-w-[320px] snap-start rounded-xl p-3",
+        "flex-shrink-0 w-[80vw] max-w-[320px] snap-start rounded-xl p-3 lg:w-[380px] lg:max-w-[380px] lg:flex-shrink",
         isActive ? "bg-[#FAFAF8]" : "bg-[#F5F3EF]",
       )}
     >
@@ -260,7 +260,7 @@ export default function KanbanBoard() {
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 px-4 pt-4 pb-24 overflow-x-auto snap-x snap-mandatory h-full">
+      <div className="flex gap-4 px-4 pt-4 pb-24 overflow-x-auto snap-x snap-mandatory h-full lg:px-8 lg:pt-6 lg:snap-none lg:justify-center">
         {COLUMNS.map((col) => (
           <Column
             key={col.id}
