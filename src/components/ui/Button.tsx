@@ -7,15 +7,16 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles = {
-  primary: "bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800",
-  secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200 active:bg-gray-300",
-  ghost: "text-gray-600 hover:bg-gray-100 active:bg-gray-200",
+  primary: "bg-[#E85D3A] text-white hover:bg-[#D14E2D] active:bg-[#C0452A]",
+  secondary:
+    "bg-[#F0EDE8] text-[#1A1A1A] hover:bg-[#E8E5E1] active:bg-[#DDD9D3]",
+  ghost: "text-[#6B6660] hover:bg-[#F0EDE8] active:bg-[#E8E5E1]",
 };
 
 const sizeStyles = {
-  sm: "px-3 py-1.5 text-sm",
-  md: "px-4 py-2",
-  lg: "px-6 py-3 text-lg",
+  sm: "h-8 px-3 text-[13px]",
+  md: "h-10 px-4 text-[14px]",
+  lg: "h-12 px-6 text-[15px]",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -23,7 +24,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     <button
       ref={ref}
       className={cn(
-        "rounded-lg font-medium transition-colors min-h-[44px] disabled:opacity-50 disabled:pointer-events-none",
+        "rounded-xl font-medium transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none",
         variantStyles[variant],
         sizeStyles[size],
         className,

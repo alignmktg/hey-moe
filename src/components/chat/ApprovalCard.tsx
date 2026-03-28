@@ -34,14 +34,15 @@ export function ApprovalCard({ toolName, args }: ApprovalCardProps) {
   const Icon = config.icon;
 
   return (
-    <div className="border-l-4 border-green-500 bg-green-50 rounded-lg p-3 my-1">
-      <div className="flex items-center gap-2">
-        <Icon className="w-4 h-4 text-green-600 shrink-0" />
-        <span className="text-sm font-medium text-gray-900">
+    <div className="relative border border-[#E8E5E1] bg-white rounded-xl p-3 my-1 overflow-hidden max-h-14">
+      <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#E85D3A] rounded-l-xl" />
+      <div className="flex items-center gap-2 ml-1">
+        <Icon className="w-4 h-4 text-[#E85D3A] shrink-0" />
+        <span className="text-[13px] font-semibold text-[#1A1A1A]">
           {config.label}
         </span>
       </div>
-      <p className="text-sm text-gray-600 mt-1 ml-6">
+      <p className="text-[13px] text-[#6B6660] mt-0.5 ml-7 truncate">
         {getDescription(toolName, args)}
       </p>
     </div>

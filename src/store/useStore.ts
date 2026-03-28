@@ -23,7 +23,11 @@ interface Actions {
   setActiveTaskIds: (ids: string[]) => void;
 }
 
-export type StoreState = UISlice & ContextSlice & Actions;
+interface DataSlice {
+  dataMode: "demo" | "live";
+}
+
+export type StoreState = UISlice & ContextSlice & DataSlice & Actions;
 
 export const useStore = create<StoreState>()((set) => ({
   // UI slice
@@ -35,6 +39,10 @@ export const useStore = create<StoreState>()((set) => ({
   // Context slice
   activeProjectId: null,
   activeTaskIds: [],
+
+  // Data slice
+  dataMode:
+    (localStorage.getItem("hey-moe-data-mode") as "demo" | "live") ?? "demo",
 
   // Actions
   setCurrentView: (view) => set({ currentView: view }),
