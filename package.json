@@ -12,6 +12,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.64",
     "@ai-sdk/react": "^3.0.143",
+    "@hello-pangea/dnd": "^18.0.1",
     "ai": "^6.0.141",
     "clsx": "^2.1.1",
     "dexie": "^4.4.1",

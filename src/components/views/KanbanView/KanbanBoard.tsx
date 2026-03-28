@@ -1,7 +1,12 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { AnimatePresence, motion } from "framer-motion";
-import { Calendar, ArrowRight, ArrowLeft } from "lucide-react";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  type DropResult,
+} from "@hello-pangea/dnd";
+import { Calendar } from "lucide-react";
 import { db, type Task } from "../../../db/dexieDB";
 import { useStore } from "../../../store/useStore";
 import { useSyncDB } from "../../../hooks/useSyncDB";
@@ -44,117 +49,80 @@ function TaskCard({
   task,
   projectName,
   isDoneColumn,
-  isSelected,
-  onSelect,
-  onMove,
+  index,
 }: {
   task: Task;
   projectName?: string;
   isDoneColumn?: boolean;
-  isSelected: boolean;
-  onSelect: () => void;
-  onMove: () => void;
+  index: number;
 }) {
-  const targetLabel = isDoneColumn ? "Move to Active" : "Mark Done";
-  const TargetIcon = isDoneColumn ? ArrowLeft : ArrowRight;
-
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
-      className={cn(
-        "bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all",
-        isDoneColumn && "opacity-70",
-        isSelected &&
-          "ring-2 ring-[#E85D3A] shadow-[0_2px_8px_rgba(232,93,58,0.15)]",
-      )}
-    >
-      <button className="w-full text-left p-4" onClick={onSelect}>
-        <p
+    <Draggable draggableId={String(task.id)} index={index}>
+      {(provided, snapshot) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
           className={cn(
-            "text-[14px] font-['Inter',sans-serif] font-semibold leading-snug text-[#1A1A1A]",
-            isDoneColumn && "line-through text-[#9C9690]",
+            "bg-white rounded-xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow mb-3",
+            "hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)]",
+            snapshot.isDragging &&
+              "shadow-[0_8px_24px_rgba(0,0,0,0.12)] scale-[1.02] rotate-[1deg]",
+            isDoneColumn && "opacity-70",
           )}
         >
-          {task.title}
-        </p>
+          <p
+            className={cn(
+              "text-[14px] font-['Inter',sans-serif] font-semibold leading-snug text-[#1A1A1A]",
+              isDoneColumn && "line-through text-[#9C9690]",
+            )}
+          >
+            {task.title}
+          </p>
 
-        <div className="flex items-center gap-3 mt-2.5">
-          {projectName && (
-            <span className="flex items-center gap-1.5 text-[12px] font-['Inter',sans-serif] text-[#6B6660]">
+          <div className="flex items-center gap-3 mt-2.5">
+            {projectName && (
+              <span className="flex items-center gap-1.5 text-[12px] font-['Inter',sans-serif] text-[#6B6660]">
+                <span
+                  className="w-[6px] h-[6px] rounded-full flex-shrink-0"
+                  style={{ backgroundColor: getProjectColor(task.projectId) }}
+                />
+                {projectName}
+              </span>
+            )}
+            {task.dueDate && (
               <span
-                className="w-[6px] h-[6px] rounded-full flex-shrink-0"
-                style={{ backgroundColor: getProjectColor(task.projectId) }}
-              />
-              {projectName}
-            </span>
-          )}
-          {task.dueDate && (
-            <span
-              className={cn(
-                "flex items-center gap-1 text-[12px] font-['Inter',sans-serif]",
-                isOverdue(task.dueDate) ? "text-[#E85D3A]" : "text-[#6B6660]",
-              )}
-            >
-              <Calendar className="w-3 h-3" />
-              {formatDate(task.dueDate)}
-            </span>
+                className={cn(
+                  "flex items-center gap-1 text-[12px] font-['Inter',sans-serif]",
+                  isOverdue(task.dueDate) ? "text-[#E85D3A]" : "text-[#6B6660]",
+                )}
+              >
+                <Calendar className="w-3 h-3" />
+                {formatDate(task.dueDate)}
+              </span>
+            )}
+          </div>
+
+          {task.tags && task.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2.5">
+              {task.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className={cn(
+                    "text-[11px] tracking-wide px-2 py-0.5 rounded-full font-['Inter',sans-serif]",
+                    tag.toLowerCase() === "urgent"
+                      ? "bg-[#FEF2EE] text-[#E85D3A]"
+                      : "bg-[#F0EDE8] text-[#6B6660]",
+                  )}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
           )}
         </div>
-
-        {task.tags && task.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-2.5">
-            {task.tags.map((tag) => (
-              <span
-                key={tag}
-                className={cn(
-                  "text-[11px] tracking-wide px-2 py-0.5 rounded-full font-['Inter',sans-serif]",
-                  tag.toLowerCase() === "urgent"
-                    ? "bg-[#FEF2EE] text-[#E85D3A]"
-                    : "bg-[#F0EDE8] text-[#6B6660]",
-                )}
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </button>
-
-      {/* Move action — shown when selected */}
-      <AnimatePresence>
-        {isSelected && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="overflow-hidden"
-          >
-            <div className="border-t border-[#E8E5E1] px-4 py-2.5">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onMove();
-                }}
-                className={cn(
-                  "flex items-center justify-center gap-2 w-full h-9 rounded-lg text-[13px] font-medium transition-colors",
-                  isDoneColumn
-                    ? "bg-[#FAFAF8] text-[#6B6660] hover:bg-[#F0EDE8] active:bg-[#E8E5E1]"
-                    : "bg-[#FEF2EE] text-[#E85D3A] hover:bg-[#FCDDD3] active:bg-[#E85D3A] active:text-white",
-                )}
-              >
-                <TargetIcon size={14} />
-                {targetLabel}
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+      )}
+    </Draggable>
   );
 }
 
@@ -162,16 +130,10 @@ function Column({
   column,
   tasks,
   projectMap,
-  selectedId,
-  onSelect,
-  onMove,
 }: {
   column: { id: ColumnStatus; label: string };
   tasks: Task[];
   projectMap: Map<number, string>;
-  selectedId: number | null;
-  onSelect: (id: number) => void;
-  onMove: (task: Task) => void;
 }) {
   const isActive = column.id === "active";
 
@@ -194,28 +156,37 @@ function Column({
         </span>
       </div>
 
-      <div className="flex flex-col gap-3 min-h-[120px]">
-        <AnimatePresence mode="popLayout">
-          {tasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              projectName={projectMap.get(task.projectId)}
-              isDoneColumn={!isActive}
-              isSelected={selectedId === task.id}
-              onSelect={() => onSelect(task.id)}
-              onMove={() => onMove(task)}
-            />
-          ))}
-        </AnimatePresence>
-        {tasks.length === 0 && (
-          <div className="rounded-xl border-2 border-dashed border-[#E85D3A]/30 h-[80px] flex items-center justify-center">
-            <span className="text-[13px] text-[#9C9690] font-['Inter',sans-serif]">
-              No tasks
-            </span>
+      <Droppable droppableId={column.id}>
+        {(provided, snapshot) => (
+          <div
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            className={cn(
+              "min-h-[120px] rounded-lg transition-colors",
+              snapshot.isDraggingOver &&
+                "bg-[#E85D3A]/5 ring-2 ring-dashed ring-[#E85D3A]/20",
+            )}
+          >
+            {tasks.map((task, index) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                projectName={projectMap.get(task.projectId)}
+                isDoneColumn={!isActive}
+                index={index}
+              />
+            ))}
+            {provided.placeholder}
+            {tasks.length === 0 && !snapshot.isDraggingOver && (
+              <div className="rounded-xl border-2 border-dashed border-[#E85D3A]/30 h-[80px] flex items-center justify-center">
+                <span className="text-[13px] text-[#9C9690] font-['Inter',sans-serif]">
+                  No tasks
+                </span>
+              </div>
+            )}
           </div>
         )}
-      </div>
+      </Droppable>
     </div>
   );
 }
@@ -223,7 +194,6 @@ function Column({
 export default function KanbanBoard() {
   const activeProjectId = useStore((s) => s.activeProjectId);
   const { updateTask } = useSyncDB();
-  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const tasks = useLiveQuery(async () => {
     if (activeProjectId) {
@@ -251,31 +221,33 @@ export default function KanbanBoard() {
     return map;
   }, [tasks]);
 
-  const handleSelect = (id: number) => {
-    setSelectedId((prev) => (prev === id ? null : id));
-  };
+  const handleDragEnd = (result: DropResult) => {
+    const { draggableId, destination } = result;
+    if (!destination || !tasks) return;
 
-  const handleMove = (task: Task) => {
-    const newStatus = task.status === "active" ? "done" : "active";
-    setSelectedId(null);
-    updateTask(task.id, { status: newStatus });
+    const taskId = Number(draggableId);
+    const newStatus = destination.droppableId as ColumnStatus;
+    const task = tasks.find((t) => t.id === taskId);
+
+    if (task && task.status !== newStatus) {
+      updateTask(taskId, { status: newStatus });
+    }
   };
 
   if (!tasks) return null;
 
   return (
-    <div className="flex gap-4 px-4 pt-4 pb-24 h-full overflow-x-auto snap-x snap-mandatory overscroll-none lg:px-8 lg:pt-6 lg:snap-none lg:justify-center">
-      {COLUMNS.map((col) => (
-        <Column
-          key={col.id}
-          column={col}
-          tasks={grouped[col.id]}
-          projectMap={projectMap}
-          selectedId={selectedId}
-          onSelect={handleSelect}
-          onMove={handleMove}
-        />
-      ))}
-    </div>
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <div className="flex gap-4 px-4 pt-4 pb-24 h-full overflow-x-auto snap-x snap-mandatory overscroll-none lg:px-8 lg:pt-6 lg:snap-none lg:justify-center">
+        {COLUMNS.map((col) => (
+          <Column
+            key={col.id}
+            column={col}
+            tasks={grouped[col.id]}
+            projectMap={projectMap}
+          />
+        ))}
+      </div>
+    </DragDropContext>
   );
 }
