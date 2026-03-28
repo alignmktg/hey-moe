@@ -2,6 +2,14 @@ import { create } from "zustand";
 
 export type ViewMode = "list" | "kanban" | "swipe";
 
+const VALID_VIEWS: ViewMode[] = ["list", "kanban", "swipe"];
+
+function getInitialView(): ViewMode {
+  const hash = window.location.hash.replace("#", "");
+  if (VALID_VIEWS.includes(hash as ViewMode)) return hash as ViewMode;
+  return "list";
+}
+
 interface UISlice {
   currentView: ViewMode;
   isNavSidebarOpen: boolean;
@@ -31,7 +39,7 @@ export type StoreState = UISlice & ContextSlice & DataSlice & Actions;
 
 export const useStore = create<StoreState>()((set) => ({
   // UI slice
-  currentView: "list",
+  currentView: getInitialView(),
   isNavSidebarOpen: false,
   isMoeSidebarOpen: typeof window !== "undefined" && window.innerWidth >= 1024,
   isCmdKOpen: false,
@@ -45,7 +53,10 @@ export const useStore = create<StoreState>()((set) => ({
     (localStorage.getItem("hey-moe-data-mode") as "demo" | "live") ?? "demo",
 
   // Actions
-  setCurrentView: (view) => set({ currentView: view }),
+  setCurrentView: (view) => {
+    window.location.hash = view;
+    set({ currentView: view });
+  },
   toggleNavSidebar: () =>
     set((s) => ({ isNavSidebarOpen: !s.isNavSidebarOpen })),
   toggleMoeSidebar: () =>
