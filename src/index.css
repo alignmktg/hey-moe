@@ -18,21 +18,29 @@
 
 html {
   scroll-behavior: smooth;
+  height: 100dvh;
+  overscroll-behavior: none;
 }
 
 html,
 body,
 #root {
-  height: 100%;
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 body {
+  height: 100dvh;
   font-family: var(--font-body);
   background-color: var(--color-page-bg);
   color: var(--color-text-primary);
+  -webkit-text-size-adjust: 100%;
+}
+
+#root {
+  height: 100dvh;
+  overscroll-behavior-y: none;
 }
 
 ::selection {
