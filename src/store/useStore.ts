@@ -1,8 +1,8 @@
 import { create } from "zustand";
 
-export type ViewMode = "list" | "kanban" | "swipe";
+export type ViewMode = "list" | "kanban" | "swipe" | "moe";
 
-const VALID_VIEWS: ViewMode[] = ["list", "kanban", "swipe"];
+const VALID_VIEWS: ViewMode[] = ["list", "kanban", "swipe", "moe"];
 
 function getInitialView(): ViewMode {
   const hash = window.location.hash.replace("#", "");
@@ -13,7 +13,6 @@ function getInitialView(): ViewMode {
 interface UISlice {
   currentView: ViewMode;
   isNavSidebarOpen: boolean;
-  isMoeSidebarOpen: boolean;
   isCmdKOpen: boolean;
 }
 
@@ -25,7 +24,6 @@ interface ContextSlice {
 interface Actions {
   setCurrentView: (view: ViewMode) => void;
   toggleNavSidebar: () => void;
-  toggleMoeSidebar: () => void;
   toggleCmdK: () => void;
   setActiveProject: (id: string | null) => void;
   setActiveTaskIds: (ids: string[]) => void;
@@ -41,7 +39,6 @@ export const useStore = create<StoreState>()((set) => ({
   // UI slice
   currentView: getInitialView(),
   isNavSidebarOpen: false,
-  isMoeSidebarOpen: typeof window !== "undefined" && window.innerWidth >= 1024,
   isCmdKOpen: false,
 
   // Context slice
@@ -59,8 +56,6 @@ export const useStore = create<StoreState>()((set) => ({
   },
   toggleNavSidebar: () =>
     set((s) => ({ isNavSidebarOpen: !s.isNavSidebarOpen })),
-  toggleMoeSidebar: () =>
-    set((s) => ({ isMoeSidebarOpen: !s.isMoeSidebarOpen })),
   toggleCmdK: () => set((s) => ({ isCmdKOpen: !s.isCmdKOpen })),
   setActiveProject: (id) => set({ activeProjectId: id }),
   setActiveTaskIds: (ids) => set({ activeTaskIds: ids }),

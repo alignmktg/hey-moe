@@ -6,13 +6,12 @@ import {
   useState,
   useCallback,
 } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { X, ArrowUp, Sparkles } from "lucide-react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useStore } from "../../store/useStore";
-import { executeToolCall } from "../../agents/moeService";
-import { ApprovalCard } from "./ApprovalCard";
+import { ArrowUp, Sparkles } from "lucide-react";
+import Markdown from "react-markdown";
+import { executeToolCall } from "../../../agents/moeService";
+import { ApprovalCard } from "../../chat/ApprovalCard";
 
 const suggestions = [
   "Create a task",
@@ -22,8 +21,7 @@ const suggestions = [
 
 const MAX_TEXTAREA_HEIGHT = 160;
 
-function MoeChatContent({ showHeader = true }: { showHeader?: boolean }) {
-  const toggle = useStore((s) => s.toggleMoeSidebar);
+export default function MoeView() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
@@ -56,7 +54,7 @@ function MoeChatContent({ showHeader = true }: { showHeader?: boolean }) {
   }, [messages, isLoading]);
 
   useEffect(() => {
-    setTimeout(() => textareaRef.current?.focus(), 300);
+    setTimeout(() => textareaRef.current?.focus(), 200);
   }, []);
 
   const resizeTextarea = useCallback(() => {
@@ -90,50 +88,28 @@ function MoeChatContent({ showHeader = true }: { showHeader?: boolean }) {
     }
   };
 
-  const handleSuggestion = (text: string) => {
-    sendMessage({ text });
-  };
-
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      {showHeader && (
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#E8E5E1] shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-2 h-2 rounded-full bg-[#E85D3A]" />
-            <h2 className="font-['Fraunces',serif] text-[18px] font-semibold text-[#1A1A1A]">
-              Moe
-            </h2>
-          </div>
-          <button
-            onClick={toggle}
-            className="p-2 -mr-2 rounded-lg text-[#6B6660] hover:bg-[#F0EDE8] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center lg:hidden"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      )}
-
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-5 py-5">
+      <div className="flex-1 overflow-y-auto px-4 py-5 lg:px-8 lg:max-w-[700px] lg:mx-auto lg:w-full">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full -mt-8">
-            <div className="w-12 h-12 rounded-full bg-[#E85D3A] flex items-center justify-center mb-4">
-              <Sparkles className="w-6 h-6 text-white" />
+            <div className="w-14 h-14 rounded-full bg-[#E85D3A] flex items-center justify-center mb-5">
+              <Sparkles className="w-7 h-7 text-white" />
             </div>
-            <h3 className="font-['Fraunces',serif] text-[20px] font-semibold text-[#1A1A1A] mb-2">
+            <h2 className="font-['Fraunces',serif] text-[24px] font-semibold text-[#1A1A1A] mb-2">
               Hey! I'm Moe
-            </h3>
-            <p className="text-[14px] text-[#6B6660] text-center max-w-[280px] mb-6 leading-relaxed">
+            </h2>
+            <p className="text-[15px] text-[#6B6660] text-center max-w-[320px] mb-8 leading-relaxed">
               Your AI task assistant. Ask me to create tasks, break down
               projects, or help prioritize your work.
             </p>
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="flex flex-wrap justify-center gap-2.5">
               {suggestions.map((s) => (
                 <button
                   key={s}
-                  onClick={() => handleSuggestion(s)}
-                  className="rounded-full border border-[#E8E5E1] px-4 py-2 text-[13px] text-[#1A1A1A] hover:bg-[#FAFAF8] active:bg-[#F0EDE8] transition-colors"
+                  onClick={() => sendMessage({ text: s })}
+                  className="rounded-full border border-[#E8E5E1] px-5 py-2.5 text-[14px] text-[#1A1A1A] hover:bg-[#FAFAF8] active:bg-[#F0EDE8] transition-colors"
                 >
                   {s}
                 </button>
@@ -167,9 +143,15 @@ function MoeChatContent({ showHeader = true }: { showHeader?: boolean }) {
                                 : "bg-[#F5F3EF] text-[#1A1A1A] rounded-2xl rounded-bl-md px-4 py-2.5 max-w-[85%]"
                             }
                           >
-                            <p className="text-[14px] whitespace-pre-wrap leading-relaxed">
-                              {part.text}
-                            </p>
+                            {message.role === "assistant" ? (
+                              <div className="text-[14px] leading-relaxed prose prose-sm prose-stone max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5 [&_code]:bg-[#E8E5E1] [&_code]:px-1 [&_code]:rounded [&_pre]:bg-[#1A1A1A] [&_pre]:text-white [&_pre]:rounded-lg [&_pre]:p-3">
+                                <Markdown>{part.text}</Markdown>
+                              </div>
+                            ) : (
+                              <p className="text-[14px] whitespace-pre-wrap leading-relaxed">
+                                {part.text}
+                              </p>
+                            )}
                           </div>
                         </div>
                       );
@@ -218,67 +200,32 @@ function MoeChatContent({ showHeader = true }: { showHeader?: boolean }) {
       </div>
 
       {/* Input */}
-      <div className="border-t border-[#E8E5E1] bg-white px-4 py-3 pb-[max(env(safe-area-inset-bottom,0px),12px)] shrink-0">
-        <form onSubmit={handleSubmit} className="flex items-end gap-2">
-          <textarea
-            ref={textareaRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Message Moe..."
-            rows={1}
-            className="flex-1 rounded-xl bg-[#FAFAF8] border border-[#E8E5E1] px-4 py-2.5 text-[14px] text-[#1A1A1A] placeholder:text-[#9C9690] focus:outline-none focus:ring-2 focus:ring-[#E85D3A]/10 focus:border-[#E85D3A] min-h-[44px] resize-none leading-relaxed"
-            style={{ overflowY: "hidden" }}
-          />
-          <button
-            type="submit"
-            disabled={!input.trim()}
-            className="flex items-center justify-center w-[44px] h-[44px] rounded-full bg-[#E85D3A] text-white disabled:opacity-30 disabled:pointer-events-none transition-opacity shrink-0 mb-[1px]"
-          >
-            <ArrowUp className="w-5 h-5" />
-          </button>
-        </form>
-        <p className="text-[11px] text-[#9C9690] mt-1.5 ml-1 hidden lg:block">
-          Enter to send, Shift+Enter for new line
-        </p>
+      <div className="border-t border-[#E8E5E1] bg-white px-4 py-3 pb-[max(env(safe-area-inset-bottom,0px),12px)] shrink-0 lg:px-8">
+        <div className="lg:max-w-[700px] lg:mx-auto">
+          <form onSubmit={handleSubmit} className="flex items-end gap-2">
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Message Moe..."
+              rows={1}
+              className="flex-1 rounded-xl bg-[#FAFAF8] border border-[#E8E5E1] px-4 py-2.5 text-[14px] text-[#1A1A1A] placeholder:text-[#9C9690] focus:outline-none focus:ring-2 focus:ring-[#E85D3A]/10 focus:border-[#E85D3A] min-h-[44px] resize-none leading-relaxed"
+              style={{ overflowY: "hidden" }}
+            />
+            <button
+              type="submit"
+              disabled={!input.trim()}
+              className="flex items-center justify-center w-[44px] h-[44px] rounded-full bg-[#E85D3A] text-white disabled:opacity-30 disabled:pointer-events-none transition-opacity shrink-0 mb-[1px]"
+            >
+              <ArrowUp className="w-5 h-5" />
+            </button>
+          </form>
+          <p className="text-[11px] text-[#9C9690] mt-1.5 ml-1 hidden lg:block">
+            Enter to send, Shift+Enter for new line
+          </p>
+        </div>
       </div>
     </div>
-  );
-}
-
-// Desktop inline panel — used inside AppShell's flex layout
-export function MoeInlinePanel() {
-  return <MoeChatContent showHeader={true} />;
-}
-
-// Mobile overlay — fixed positioning
-export default function MoeSidebar() {
-  const isOpen = useStore((s) => s.isMoeSidebarOpen);
-  const toggle = useStore((s) => s.toggleMoeSidebar);
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/20 z-40 lg:hidden"
-            onClick={toggle}
-          />
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed inset-0 z-50 bg-white w-screen lg:hidden"
-          >
-            <MoeChatContent showHeader={true} />
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
   );
 }

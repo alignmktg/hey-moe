@@ -6,10 +6,11 @@ const viewKeys: Record<string, ViewMode> = {
   "1": "list",
   "2": "kanban",
   "3": "swipe",
+  "4": "moe",
 };
 
 export function useKeyboardShortcuts() {
-  const { toggleCmdK, setCurrentView, toggleMoeSidebar } = useStore();
+  const { toggleCmdK, setCurrentView } = useStore();
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -28,7 +29,7 @@ export function useKeyboardShortcuts() {
 
       if (mod && e.key === "m") {
         e.preventDefault();
-        toggleMoeSidebar();
+        setCurrentView("moe");
         return;
       }
 
@@ -40,5 +41,5 @@ export function useKeyboardShortcuts() {
 
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [toggleCmdK, setCurrentView, toggleMoeSidebar]);
+  }, [toggleCmdK, setCurrentView]);
 }
