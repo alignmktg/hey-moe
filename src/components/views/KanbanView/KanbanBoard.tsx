@@ -95,10 +95,10 @@ function SortableCard({
       <div className="flex">
         {/* Drag handle */}
         <div
-          className="flex items-center justify-center w-8 shrink-0 cursor-grab active:cursor-grabbing text-[#D4D0CC] hover:text-[#9C9690] touch-none"
+          className="flex items-center justify-center w-10 shrink-0 cursor-grab active:cursor-grabbing text-[#9C9690] hover:text-[#6B6660] touch-none"
           {...listeners}
         >
-          <GripVertical size={14} />
+          <GripVertical size={16} />
         </div>
         <div className="flex-1 py-3.5 pr-4">
           <p
