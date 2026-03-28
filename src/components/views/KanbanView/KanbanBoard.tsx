@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { motion } from "framer-motion";
 import { Calendar, GripVertical } from "lucide-react";
@@ -216,7 +216,8 @@ export default function KanbanBoard() {
   const { updateTask } = useSyncDB();
   const [isDragging, setIsDragging] = useState(false);
 
-  const tasks = useLiveQuery(async () => {
+  // Live query for tasks — but freeze during drag to prevent teleporting
+  const liveTasks = useLiveQuery(async () => {
     if (activeProjectId) {
       return db.tasks
         .where("projectId")
@@ -225,6 +226,12 @@ export default function KanbanBoard() {
     }
     return db.tasks.toArray();
   }, [activeProjectId]);
+
+  const frozenTasksRef = useRef<Task[] | null>(null);
+
+  // When drag starts, snapshot the current tasks. When drag ends, clear snapshot.
+  const tasks =
+    isDragging && frozenTasksRef.current ? frozenTasksRef.current : liveTasks;
 
   const projects = useLiveQuery(() => db.projects.toArray());
 
@@ -250,10 +257,13 @@ export default function KanbanBoard() {
   );
 
   const handleDragStart = () => {
+    // Freeze current task state so live queries don't cause teleporting
+    frozenTasksRef.current = liveTasks ? [...liveTasks] : null;
     setIsDragging(true);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
+    frozenTasksRef.current = null;
     setIsDragging(false);
     const { active, over } = event;
     if (!over || !tasks) return;
@@ -276,11 +286,14 @@ export default function KanbanBoard() {
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      onDragCancel={() => setIsDragging(false)}
+      onDragCancel={() => {
+        frozenTasksRef.current = null;
+        setIsDragging(false);
+      }}
     >
       <div
         className={cn(
-          "flex gap-4 px-4 pt-4 pb-24 h-full lg:px-8 lg:pt-6 lg:snap-none lg:justify-center",
+          "flex gap-4 px-4 pt-4 pb-24 h-full lg:px-8 lg:pt-6 lg:snap-none lg:justify-center overscroll-none",
           isDragging
             ? "overflow-hidden"
             : "overflow-x-auto snap-x snap-mandatory",
